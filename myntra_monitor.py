@@ -2,6 +2,10 @@ import time
 import requests
 import undetected_chromedriver as uc
 import os
+from dotenv import load_dotenv
+
+# Load .env variables (optional locally)
+load_dotenv()
 
 # === CONFIG from Environment Variables ===
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
