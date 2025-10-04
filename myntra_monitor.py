@@ -1,16 +1,16 @@
 import time
 import requests
 import undetected_chromedriver as uc
+import os
 
-# === CONFIG ===
-TELEGRAM_BOT_TOKEN = "8414825367:AAHxfQs3DAz0pXOjAHDzD5ytMQRxKgGAkpA"   # Replace with your Telegram Bot Token
-CHAT_ID = "5166204363"               # Replace with your Telegram Chat ID
-CHECK_URL = "https://www.myntra.com/14773806"  # Product page
-CHECK_KEYWORD = "BFFNEW15"                     # Coupon to detect
-CHECK_INTERVAL = 60                             # seconds
-ALERT_COOLDOWN = 300                            # wait after alert in seconds
+# === CONFIG from Environment Variables ===
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
+CHECK_URL = os.environ.get("CHECK_URL", "https://www.myntra.com/14773806")
+CHECK_KEYWORD = os.environ.get("CHECK_KEYWORD", "BFFNEW15")
+CHECK_INTERVAL = int(os.environ.get("CHECK_INTERVAL", 60))
+ALERT_COOLDOWN = int(os.environ.get("ALERT_COOLDOWN", 300))
 
-# === FUNCTIONS ===
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": message}
@@ -32,10 +32,9 @@ def check_myntra():
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-software-rasterizer")
 
-        # Use context manager to safely open and close Chrome
         with uc.Chrome(options=options) as driver:
             driver.get(CHECK_URL)
-            time.sleep(7)  # wait for JS to load
+            time.sleep(7)
             page_text = driver.page_source
 
         if CHECK_KEYWORD.lower() in page_text.lower():
@@ -47,13 +46,12 @@ def check_myntra():
         print("⚠️ Error checking Myntra:", e)
         return False
 
-# === MAIN LOOP ===
 if __name__ == "__main__":
     print("🔍 Starting Myntra Coupon Monitor...")
     while True:
         found = check_myntra()
         if found:
-            print(f"🎉 Coupon found! Waiting {ALERT_COOLDOWN} seconds before next check...")
+            print(f"🎉 Coupon found! Waiting {ALERT_COOLDOWN} seconds...")
             time.sleep(ALERT_COOLDOWN)
         else:
             print(f"⏱ Not found, checking again in {CHECK_INTERVAL} seconds...")
